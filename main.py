@@ -200,6 +200,7 @@ links_in_db = {}
 for link_pair in all_links['data']['links']:
     links_in_db[link_pair['link']] = link_pair['id']
 
+print('Substituting...')
 for i in range(len(feed_entries_by_join)):
     feed_entries_by_join[i][0] = links_in_db[feed_entries_by_join[i][0]]
     feed_entries_by_join[i][1] = words_in_db[feed_entries_by_join[i][1]]
