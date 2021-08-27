@@ -2,6 +2,11 @@
 
 import feedparser, csv, json, requests, re
 
+# Grab admin secret
+print('Read secrets.txt...')
+with open('secrets.txt', mode='r') as file:
+    X_HASURA_ADMIN_SECRET = [line for line in file][0]
+
 # Get feeds
 print("Read feeds.csv...")
 with open('feeds.csv', mode='r') as file:
@@ -37,11 +42,6 @@ feed_entries_by_links = list( dict.fromkeys(feed_entries_by_links) )
 feed_entries_by_words = list( dict.fromkeys(feed_entries_by_words) )
 
 print('Got', len(feed_entries_by_links), 'links,', len(feed_entries_by_words), 'words and', len(feed_entries_by_join), 'joins')
-
-# Grab admin secret
-print('Read secrets.txt...')
-with open('secrets.txt', mode='r') as file:
-    X_HASURA_ADMIN_SECRET = [line for line in file][0]
 
 # Grab links from db
 def getLinks(SECRET:str):
@@ -83,8 +83,7 @@ def getWords(SECRET:str):
     return json.loads(response.text)
 parsed_response_words = getWords(X_HASURA_ADMIN_SECRET)
 
-# Grab words from the db
-
+# Grab joins from the db
 def getJoins(SECRET:str):
     print('Getting joins from the db...')
     request_url = 'https://free-brain.hasura.app/v1/graphql'
@@ -237,3 +236,12 @@ print('Server says:', response.status_code)
 print(response.text)
 
 print("All done.")
+
+input("Continue to recalculate association tables?")
+
+# Gotta take joins and count the frequencies of each word
+feed_entries_by_join = getJoins(X_HASURA_ADMIN_SECRET)
+print(feed_entries_by_join)
+
+for word_id in range(len(words_in_db.values())):
+    pass
