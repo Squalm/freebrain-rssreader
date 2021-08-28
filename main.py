@@ -1,6 +1,8 @@
 # Runs on python 3.7 (not 3.9 at time of writing), because of Feedparser's requirements
 
-import feedparser, csv, json, requests, re
+import feedparser, csv, json, requests, re, time
+
+from requests.api import request
 
 # Grab admin secret
 print('Read secrets.txt...')
@@ -15,6 +17,64 @@ with open('feeds.csv', mode='r') as file:
     #print(csvfile)
 
     urls = [line['feedurl'] for line in csvfile]
+
+# Grab links from db
+def getLinks(SECRET:str):
+    print('Getting links from the db...')
+    request_url = 'https://free-brain.hasura.app/v1/graphql'
+    request_headers = {
+        'content-type': 'application/json',
+        'X-HASURA-ADMIN-SECRET': SECRET
+    }
+    request_query = """query {
+        links {
+            id,
+            link
+        }
+    }
+    """
+    response = requests.post(request_url, json={'query': request_query}, headers=request_headers)
+    print('Server says:', response.status_code)
+    return json.loads(response.text)
+
+# Grab words from db
+def getWords(SECRET:str):
+    print('Getting keywords from the db...')
+    request_url = 'https://free-brain.hasura.app/v1/graphql'
+    request_headers = {
+        'content-type': 'application/json',
+        'X-HASURA-ADMIN-SECRET': SECRET
+    }
+    request_query = """query {
+        keywords {
+            id,
+            name
+        }
+    }
+    """
+    response = requests.post(request_url, json={'query': request_query}, headers=request_headers)
+    print('Server says:', response.status_code)
+    return json.loads(response.text)
+
+# Grab joins from the db
+def getJoins(SECRET:str):
+    print('Getting joins from the db...')
+    request_url = 'https://free-brain.hasura.app/v1/graphql'
+    request_headers = {
+        'content-type': 'application/json',
+        'X-HASURA-ADMIN-SECRET': SECRET
+    }
+    request_query = """query {
+        links_join_keywords {
+            id,
+            link_id,
+            keyword_id
+        }
+    }
+    """
+    response = requests.post(request_url, json={'query': request_query}, headers=request_headers)
+    print('Server says:', response.status_code)
+    return json.loads(response.text)
 
 # Get RSS
 print("Getting RSS feeds...")
@@ -43,65 +103,10 @@ feed_entries_by_words = list( dict.fromkeys(feed_entries_by_words) )
 
 print('Got', len(feed_entries_by_links), 'links,', len(feed_entries_by_words), 'words and', len(feed_entries_by_join), 'joins')
 
-# Grab links from db
-def getLinks(SECRET:str):
-    print('Getting links from the db...')
-    request_url = 'https://free-brain.hasura.app/v1/graphql'
-    request_headers = {
-        'content-type': 'application/json',
-        'X-HASURA-ADMIN-SECRET': SECRET
-    }
-    request_query = """query {
-        links {
-            id,
-            link
-        }
-    }
-    """
-    response = requests.post(request_url, json={'query': request_query}, headers=request_headers)
-    print('Server says:', response.status_code)
-    return json.loads(response.text)
 parsed_response_links = getLinks(X_HASURA_ADMIN_SECRET)
 
-# Grab words from db
-def getWords(SECRET:str):
-    print('Getting keywords from the db...')
-    request_url = 'https://free-brain.hasura.app/v1/graphql'
-    request_headers = {
-        'content-type': 'application/json',
-        'X-HASURA-ADMIN-SECRET': SECRET
-    }
-    request_query = """query {
-        keywords {
-            id,
-            name
-        }
-    }
-    """
-    response = requests.post(request_url, json={'query': request_query}, headers=request_headers)
-    print('Server says:', response.status_code)
-    return json.loads(response.text)
 parsed_response_words = getWords(X_HASURA_ADMIN_SECRET)
 
-# Grab joins from the db
-def getJoins(SECRET:str):
-    print('Getting joins from the db...')
-    request_url = 'https://free-brain.hasura.app/v1/graphql'
-    request_headers = {
-        'content-type': 'application/json',
-        'X-HASURA-ADMIN-SECRET': SECRET
-    }
-    request_query = """query {
-        links_join_keywords {
-            id,
-            link_id,
-            keyword_id
-        }
-    }
-    """
-    response = requests.post(request_url, json={'query': request_query}, headers=request_headers)
-    print('Server says:', response.status_code)
-    return json.loads(response.text)
 parsed_response_joins = getJoins(X_HASURA_ADMIN_SECRET)
 
 # Compare links against the db for each and if doesn't exist, add it
@@ -237,11 +242,52 @@ print(response.text)
 
 print("All done.")
 
-input("Continue to recalculate association tables?")
+#input("Continue to recalculate association counts?")
 
 # Gotta take joins and count the frequencies of each word
 feed_entries_by_join = getJoins(X_HASURA_ADMIN_SECRET)
-print(feed_entries_by_join)
 
-for word_id in range(len(words_in_db.values())):
-    pass
+print('Calculating counts... (and submit to db)')
+
+filter_counts_by_every_word = []
+request_url = 'https://free-brain.hasura.app/v1/graphql'
+request_headers = {
+    'content-type': 'application/json',
+    'X-HASURA-ADMIN-SECRET': X_HASURA_ADMIN_SECRET
+}
+
+
+for i in range(len(words_in_db.values())):
+    
+    word_id = i + 1
+    relevant_links = [join['link_id'] for join in feed_entries_by_join['data']['links_join_keywords'] if join['keyword_id'] == word_id]
+    relevant_joins = [[join for join in feed_entries_by_join['data']['links_join_keywords'] if join['link_id'] == link] for link in relevant_links]
+    
+    flat_joins = []
+    for x in relevant_joins:
+        for w in x:
+            flat_joins.append(w)
+    _counts = [[join['keyword_id'] for join in flat_joins].count(word + 1) for word in range(len(words_in_db.values()))]
+    
+    counts_dict = {}
+    for x in range(len(_counts)):
+        counts_dict[x+1] = _counts[x]
+
+    counts_sorted = dict(sorted(counts_dict.items(), key = lambda x:x[1], reverse=True))
+    
+    # Perpare for mutation
+    request_query = """"""
+    request_query += "mutation {update_keywords(where: {id: {_eq: " + str(word_id) + "} }, _set: {"
+
+    request_query += "associated_1: " + str(list(counts_sorted.keys())[0]) + ", associated_1_count: " + str(list(counts_sorted.values())[0])
+    for x in range(1, 10):
+        if list(counts_sorted.values())[x] > 0:
+            request_query += ", associated_" + str(x+1) + ": " + str(list(counts_sorted.keys())[x]) + ", associated_" + str(x+1) + "_count: " + str(list(counts_sorted.values())[x])
+
+    request_query += "}) { affected_rows } } \n"
+
+    response = requests.post(request_url, json={'query': request_query}, headers=request_headers)
+    #print('Server says:', response.status_code)
+    print(str(word_id), ":", response.text)
+
+    time.sleep(1)
