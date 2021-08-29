@@ -276,13 +276,12 @@ for i in range(len(words_in_db.values())):
     counts_sorted = dict(sorted(counts_dict.items(), key = lambda x:x[1], reverse=True))
     
     # Perpare for mutation
-    request_query = """"""
-    request_query += "mutation {update_keywords(where: {id: {_eq: " + str(word_id) + "} }, _set: {"
+    request_query = "mutation {update_keywords(where: {id: {_eq: " + str(word_id) + "} }, _set: {"
 
     request_query += "associated_1: " + str(list(counts_sorted.keys())[0]) + ", associated_1_count: " + str(list(counts_sorted.values())[0])
     for x in range(1, 10):
-        if list(counts_sorted.values())[x] > 0:
-            request_query += ", associated_" + str(x+1) + ": " + str(list(counts_sorted.keys())[x]) + ", associated_" + str(x+1) + "_count: " + str(list(counts_sorted.values())[x])
+        if list(counts_sorted.values())[x+1] > 0:
+            request_query += ", associated_" + str(x+1) + ": " + str(list(counts_sorted.keys())[x+1]) + ", associated_" + str(x+1) + "_count: " + str(list(counts_sorted.values())[x+1])
 
     request_query += "}) { affected_rows } } \n"
 
