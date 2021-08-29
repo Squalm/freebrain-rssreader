@@ -268,15 +268,15 @@ for word_id in range(1, len(words_in_db.values())+1):
             flat_joins.append(w)
     _counts = [[join['keyword_id'] for join in flat_joins].count(word + 1) for word in range(len(words_in_db.values()))]
 
-    counts_sorted = dict(sorted(_counts, key = lambda x:x[1], reverse=True))
+    cs = dict(sorted(_counts, key = lambda x:x[1], reverse=True)) # short for counts sorted
     
     # Perpare for mutation
     request_query = "mutation {update_keywords(where: {id: {_eq: " + str(word_id) + "} }, _set: {"
 
-    request_query += "associated_1: " + str(list(counts_sorted.keys())[1]) + ", associated_1_count: " + str(list(counts_sorted.values())[1])
+    request_query += "associated_1: " + str(list(cs.keys())[1]) + ", associated_1_count: " + str(list(cs.values())[1])
     for x in range(2, 11):
-        if list(counts_sorted.values())[x] > 0:
-            request_query += ", associated_" + str(x) + ": " + str(list(counts_sorted.keys())[x]) + ", associated_" + str(x) + "_count: " + str(list(counts_sorted.values())[x])
+        if list(cs.values())[x] > 0:
+            request_query += ", associated_" + str(x) + ": " + str(list(cs.keys())[x]) + ", associated_" + str(x) + "_count: " + str(list(cs.values())[x])
 
     request_query += "}) { affected_rows } } \n"
 
