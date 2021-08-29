@@ -260,13 +260,8 @@ request_headers = {
 for word_id in range(1, len(words_in_db.values())+1):
     
     relevant_links = [join['link_id'] for join in feed_entries_by_join['data']['links_join_keywords'] if join['keyword_id'] == word_id]
-    relevant_joins = [[join for join in feed_entries_by_join['data']['links_join_keywords'] if join['link_id'] == link] for link in relevant_links]
     
-    flat_joins = []
-    for x in relevant_joins:
-        for w in x:
-            flat_joins.append(w)
-    _counts = [[join['keyword_id'] for join in flat_joins].count(word + 1) for word in range(len(words_in_db.values()))]
+    flat_joins = sum([[join for join in feed_entries_by_join['data']['links_join_keywords'] if join['link_id'] == link] for link in relevant_links], [])
 
     cs = dict(sorted(_counts, key = lambda x:x[1], reverse=True)) # short for counts sorted
     
@@ -278,7 +273,7 @@ for word_id in range(1, len(words_in_db.values())+1):
         if list(cs.values())[x] > 0:
             request_query += ", associated_" + str(x) + ": " + str(list(cs.keys())[x]) + ", associated_" + str(x) + "_count: " + str(list(cs.values())[x])
 
-    request_query += "}) { affected_rows } } \n"
+    request_query += "}) { affected_rows } }"
 
     response = requests.post(request_url, json={'query': request_query}, headers=request_headers)
     #print('Server says:', response.status_code)
