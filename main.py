@@ -273,10 +273,10 @@ for word_id in range(1, len(words_in_db.values())+1):
     # Perpare for mutation
     request_query = "mutation {update_keywords(where: {id: {_eq: " + str(word_id) + "} }, _set: {"
 
-    request_query += "associated_1: " + str(list(counts_sorted.keys())[0]) + ", associated_1_count: " + str(list(counts_sorted.values())[0])
-    for x in range(1, 10):
-        if list(counts_sorted.values())[x+1] > 0:
-            request_query += ", associated_" + str(x+1) + ": " + str(list(counts_sorted.keys())[x+1]) + ", associated_" + str(x+1) + "_count: " + str(list(counts_sorted.values())[x+1])
+    request_query += "associated_1: " + str(list(counts_sorted.keys())[1]) + ", associated_1_count: " + str(list(counts_sorted.values())[1])
+    for x in range(2, 11):
+        if list(counts_sorted.values())[x] > 0:
+            request_query += ", associated_" + str(x) + ": " + str(list(counts_sorted.keys())[x]) + ", associated_" + str(x) + "_count: " + str(list(counts_sorted.values())[x])
 
     request_query += "}) { affected_rows } } \n"
 
