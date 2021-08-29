@@ -257,9 +257,8 @@ request_headers = {
 }
 
 
-for i in range(len(words_in_db.values())):
+for word_id in range(1, len(words_in_db.values())+1):
     
-    word_id = i + 1
     relevant_links = [join['link_id'] for join in feed_entries_by_join['data']['links_join_keywords'] if join['keyword_id'] == word_id]
     relevant_joins = [[join for join in feed_entries_by_join['data']['links_join_keywords'] if join['link_id'] == link] for link in relevant_links]
     
@@ -268,12 +267,8 @@ for i in range(len(words_in_db.values())):
         for w in x:
             flat_joins.append(w)
     _counts = [[join['keyword_id'] for join in flat_joins].count(word + 1) for word in range(len(words_in_db.values()))]
-    
-    counts_dict = {}
-    for x in range(len(_counts)):
-        counts_dict[x+1] = _counts[x]
 
-    counts_sorted = dict(sorted(counts_dict.items(), key = lambda x:x[1], reverse=True))
+    counts_sorted = dict(sorted(_counts, key = lambda x:x[1], reverse=True))
     
     # Perpare for mutation
     request_query = "mutation {update_keywords(where: {id: {_eq: " + str(word_id) + "} }, _set: {"
