@@ -245,6 +245,8 @@ print("All done.")
 # Gotta take joins and count the frequencies of each word
 feed_entries_by_join = getJoins(X_HASURA_ADMIN_SECRET)
 
+# Filter words to exclude words we don't want
+
 print('Calculating counts... (and submit to db)')
 
 filter_counts_by_every_word = []
