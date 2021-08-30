@@ -75,7 +75,7 @@ def getJoins(SECRET:str):
     response = requests.post(request_url, json={'query': request_query}, headers=request_headers)
     print('Server says:', response.status_code)
     return json.loads(response.text)
-'''
+
 # Get RSS
 print("Getting RSS feeds...")
 feed_entries_by_join = []
@@ -190,7 +190,7 @@ for join in feed_entries_by_join:
         _cleaned_feed_entries_by_join.append(join)
 feed_entries_by_join = _cleaned_feed_entries_by_join
 print('Found', len(feed_entries_by_join), 'unique joins')
-'''
+
 # Substitute ids
 # We must get keywords and links again so that we have the correct ids
 print('Substituting IDs... (first we must get all words and links again)')
@@ -198,7 +198,7 @@ all_words = getWords(X_HASURA_ADMIN_SECRET)
 words_in_db = {}
 for word_pair in all_words['data']['keywords']:
     words_in_db[word_pair['name']] = word_pair['id']
-'''
+
 all_links = getLinks(X_HASURA_ADMIN_SECRET)
 links_in_db = {}
 for link_pair in all_links['data']['links']:
@@ -241,7 +241,7 @@ print('Server says:', response.status_code)
 print(response.text)
 
 print("All done.")
-'''
+
 #input("Continue to recalculate association counts?")
 
 # Gotta take joins and count the frequencies of each word
@@ -274,8 +274,6 @@ def calc_counts(word_id):
             request_query += ", associated_" + str(x) + ": " + str(cs[x][0]) + ", associated_" + str(x) + "_count: " + str(cs[x][1])
 
     request_query += "}) { affected_rows } }"
-
-    print(word_id, "counted")
 
     return request_query
 
