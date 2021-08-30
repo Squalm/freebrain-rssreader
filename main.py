@@ -275,10 +275,10 @@ def calc_counts(word_id):
 
     return request_query
 
-def submit_count(word_id, url, headers, query, prevtime):
+def submit_count(url, headers, query):
     response = requests.post(url, json={'query': query}, headers=headers)
     #print('Server says:', response.status_code)
-    print(str(word_id), ": took", str(time.time() - prevtime), ":", response.text)
+    return response.text
 
 s = sched.scheduler(time.time, time.sleep)
 
@@ -289,9 +289,9 @@ def count_word_full(sc, word_id, length, url, headers, prevtime):
     if word_id <= length:
         s.enter(1, 1, count_word_full, (sc, word_id + 1, length,  url, headers, time.time(),))
 
-    request_query = calc_counts(word_id)
+    response = submit_count(url, headers, calc_counts(word_id))
 
-    submit_count(word_id, url, headers, request_query, prevtime)
+    print(str(word_id), ": took", str(time.time() - prevtime), ":", response)
 
 s.enter(1, 1, count_word_full, (s, 1, length, request_url, request_headers, time.time(),))
 s.run()
