@@ -1,6 +1,6 @@
 # Runs on python 3.7 (not 3.9 at time of writing), because of Feedparser's requirements
 
-import feedparser, csv, json, requests, re, time
+import feedparser, csv, json, requests, re, time, sched
 
 from requests.api import request
 
@@ -75,7 +75,7 @@ def getJoins(SECRET:str):
     response = requests.post(request_url, json={'query': request_query}, headers=request_headers)
     print('Server says:', response.status_code)
     return json.loads(response.text)
-
+'''
 # Get RSS
 print("Getting RSS feeds...")
 feed_entries_by_join = []
@@ -190,7 +190,7 @@ for join in feed_entries_by_join:
         _cleaned_feed_entries_by_join.append(join)
 feed_entries_by_join = _cleaned_feed_entries_by_join
 print('Found', len(feed_entries_by_join), 'unique joins')
-
+'''
 # Substitute ids
 # We must get keywords and links again so that we have the correct ids
 print('Substituting IDs... (first we must get all words and links again)')
@@ -198,7 +198,7 @@ all_words = getWords(X_HASURA_ADMIN_SECRET)
 words_in_db = {}
 for word_pair in all_words['data']['keywords']:
     words_in_db[word_pair['name']] = word_pair['id']
-
+'''
 all_links = getLinks(X_HASURA_ADMIN_SECRET)
 links_in_db = {}
 for link_pair in all_links['data']['links']:
@@ -241,7 +241,7 @@ print('Server says:', response.status_code)
 print(response.text)
 
 print("All done.")
-
+'''
 #input("Continue to recalculate association counts?")
 
 # Gotta take joins and count the frequencies of each word
@@ -256,29 +256,46 @@ request_headers = {
     'X-HASURA-ADMIN-SECRET': X_HASURA_ADMIN_SECRET
 }
 
-
-for word_id in range(1, len(words_in_db.values())+1):
-    
+def calc_counts(word_id):
     relevant_links = [join['link_id'] for join in feed_entries_by_join['data']['links_join_keywords'] if join['keyword_id'] == word_id]
     
     flat_joins = sum([[join for join in feed_entries_by_join['data']['links_join_keywords'] if join['link_id'] == link] for link in relevant_links], [])
     
-    _counts = [[join['keyword_id'] for join in flat_joins].count(word + 1) for word in range(len(words_in_db.values()))]
+    counts = [(w+1, [join['keyword_id'] for join in flat_joins].count(w+1)) for w in range(len(words_in_db))]
 
-    cs = dict(sorted(_counts, key = lambda x:x[1], reverse=True)) # short for counts sorted
+    cs = sorted(counts, key = lambda x: x[1], reverse=True) # short for counts sorted
     
     # Perpare for mutation
     request_query = "mutation {update_keywords(where: {id: {_eq: " + str(word_id) + "} }, _set: {"
 
-    request_query += "associated_1: " + str(list(cs.keys())[1]) + ", associated_1_count: " + str(list(cs.values())[1])
+    request_query += "associated_1: " + str(cs[1][0]) + ", associated_1_count: " + str(cs[1][1])
     for x in range(2, 11):
-        if list(cs.values())[x] > 0:
-            request_query += ", associated_" + str(x) + ": " + str(list(cs.keys())[x]) + ", associated_" + str(x) + "_count: " + str(list(cs.values())[x])
+        if cs[x][1] > 0:
+            request_query += ", associated_" + str(x) + ": " + str(cs[x][0]) + ", associated_" + str(x) + "_count: " + str(cs[x][1])
 
     request_query += "}) { affected_rows } }"
 
-    response = requests.post(request_url, json={'query': request_query}, headers=request_headers)
+    print(word_id, "counted")
+
+    return request_query
+
+def submit_count(word_id, url, headers, query):
+    response = requests.post(url, json={'query': query}, headers=headers)
     #print('Server says:', response.status_code)
     print(str(word_id), ":", response.text)
 
-    time.sleep(1)
+s = sched.scheduler(time.time, time.sleep)
+
+length = len(words_in_db)
+
+def count_word_full(sc, word_id, length, url, headers):
+
+    if word_id <= length:
+        s.enter(1, 1, count_word_full, (sc, word_id + 1, length,  url, headers,))
+
+    request_query = calc_counts(word_id)
+
+    submit_count(word_id, url, headers, request_query)
+
+s.enter(1, 1, count_word_full, (s, 1, length, request_url, request_headers,))
+s.run()
