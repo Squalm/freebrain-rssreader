@@ -242,8 +242,6 @@ print(response.text)
 
 print("All done.")
 
-#input("Continue to recalculate association counts?")
-
 # Gotta take joins and count the frequencies of each word
 feed_entries_by_join = getJoins(X_HASURA_ADMIN_SECRET)
 
@@ -277,23 +275,23 @@ def calc_counts(word_id):
 
     return request_query
 
-def submit_count(word_id, url, headers, query):
+def submit_count(word_id, url, headers, query, prevtime):
     response = requests.post(url, json={'query': query}, headers=headers)
     #print('Server says:', response.status_code)
-    print(str(word_id), ":", response.text)
+    print(str(word_id), ": took", str(time.time() - prevtime), ":", response.text)
 
 s = sched.scheduler(time.time, time.sleep)
 
 length = len(words_in_db)
 
-def count_word_full(sc, word_id, length, url, headers):
+def count_word_full(sc, word_id, length, url, headers, prevtime):
 
     if word_id <= length:
-        s.enter(1, 1, count_word_full, (sc, word_id + 1, length,  url, headers,))
+        s.enter(1, 1, count_word_full, (sc, word_id + 1, length,  url, headers, time.time(),))
 
     request_query = calc_counts(word_id)
 
-    submit_count(word_id, url, headers, request_query)
+    submit_count(word_id, url, headers, request_query, prevtime)
 
-s.enter(1, 1, count_word_full, (s, 1, length, request_url, request_headers,))
+s.enter(1, 1, count_word_full, (s, 1, length, request_url, request_headers, time.time(),))
 s.run()
