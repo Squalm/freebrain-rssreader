@@ -257,6 +257,10 @@ with open('excludedwords.csv', mode='r') as file:
 print('Substituting...')
 ex_words = [words_in_db[i] for i in ex_words]
 
+print("Filter joins to exclude words we don't want...")
+feed_entries_by_join['data']['links_join_keywords'] = [join for join in feed_entries_by_join['data']['links_join_keywords'] if join['keyword_id'] not in ex_words]
+
+
 print('Calculating counts... (and submit to db)')
 
 filter_counts_by_every_word = []
@@ -267,6 +271,7 @@ request_headers = {
 }
 
 def calc_counts(word_id):
+
     relevant_links = [join['link_id'] for join in feed_entries_by_join['data']['links_join_keywords'] if join['keyword_id'] == word_id]
     
     flat_joins = sum([[join for join in feed_entries_by_join['data']['links_join_keywords'] if join['link_id'] == link] for link in relevant_links], [])
@@ -298,10 +303,10 @@ length = len(words_in_db)
 
 def count_word_full(sc, word_id, length, url, headers, prevtime):
 
-    if word_id <= length:
-        s.enter(1, 1, count_word_full, (sc, word_id + 1, length,  url, headers, time.time(),))
-
     if word_id not in ex_words:
+
+        if word_id <= length:
+            s.enter(1, 1, count_word_full, (sc, word_id + 1, length,  url, headers, time.time(),))
 
         response = submit_count(url, headers, calc_counts(word_id))
 
@@ -309,6 +314,7 @@ def count_word_full(sc, word_id, length, url, headers, prevtime):
 
     else:
         print(word_id, ": excluded")
+        count_word_full(sc, word_id + 1, length, url, headers, time.time())
 
 s.enter(1, 1, count_word_full, (s, 1, length, request_url, request_headers, time.time(),))
 s.run()
