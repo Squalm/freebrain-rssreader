@@ -254,6 +254,7 @@ with open('excludedwords.csv', mode='r') as file:
 
     ex_words = [line['word'] for line in csvfile]
 
+# Substitute ex_words for ids of those words
 print('Substituting...')
 ex_words = [words_in_db[i] for i in ex_words]
 
@@ -270,6 +271,7 @@ request_headers = {
     'X-HASURA-ADMIN-SECRET': X_HASURA_ADMIN_SECRET
 }
 
+# Calculate the counts for a word id
 def calc_counts(word_id):
 
     relevant_links = [join['link_id'] for join in feed_entries_by_join['data']['links_join_keywords'] if join['keyword_id'] == word_id]
@@ -292,15 +294,18 @@ def calc_counts(word_id):
 
     return request_query
 
+# Submit the count to the url
 def submit_count(url, headers, query):
     response = requests.post(url, json={'query': query}, headers=headers)
     #print('Server says:', response.status_code)
     return response.text
 
+# sched setup
 s = sched.scheduler(time.time, time.sleep)
 
 length = len(words_in_db)
 
+# combines calc_counts and submit_count
 def count_word_full(sc, word_id, length, url, headers, prevtime):
 
     if word_id not in ex_words:
@@ -316,5 +321,6 @@ def count_word_full(sc, word_id, length, url, headers, prevtime):
         print(word_id, ": excluded")
         count_word_full(sc, word_id + 1, length, url, headers, time.time())
 
+# enter the first even to sched
 s.enter(1, 1, count_word_full, (s, 1, length, request_url, request_headers, time.time(),))
 s.run()
