@@ -246,6 +246,16 @@ print("All done.")
 feed_entries_by_join = getJoins(X_HASURA_ADMIN_SECRET)
 
 # Filter words to exclude words we don't want
+print("Read excludedwords.csv...")
+with open('excludedwords.csv', mode='r') as file:
+
+    csvfile = csv.DictReader(file)
+    #print(csvfile)
+
+    ex_words = [line['word'] for line in csvfile]
+
+print('Substituting...')
+ex_words = [words_in_db[i] for i in ex_words]
 
 print('Calculating counts... (and submit to db)')
 
@@ -291,9 +301,14 @@ def count_word_full(sc, word_id, length, url, headers, prevtime):
     if word_id <= length:
         s.enter(1, 1, count_word_full, (sc, word_id + 1, length,  url, headers, time.time(),))
 
-    response = submit_count(url, headers, calc_counts(word_id))
+    if word_id not in ex_words:
 
-    print(str(word_id), ": took", str(time.time() - prevtime), ":", response)
+        response = submit_count(url, headers, calc_counts(word_id))
+
+        print(str(word_id), ": took", str(time.time() - prevtime), ":", response)
+
+    else:
+        print(word_id, ": excluded")
 
 s.enter(1, 1, count_word_full, (s, 1, length, request_url, request_headers, time.time(),))
 s.run()
