@@ -29,7 +29,8 @@ def getLinks(SECRET:str):
     request_query = """query {
         links {
             id,
-            link
+            link,
+            published
         }
     }
     """
@@ -261,6 +262,8 @@ ex_words = [words_in_db[i] for i in ex_words]
 print("Filter joins to exclude words we don't want...")
 feed_entries_by_join['data']['links_join_keywords'] = [join for join in feed_entries_by_join['data']['links_join_keywords'] if join['keyword_id'] not in ex_words]
 
+# Get links in db (for published dates)
+# links = getLinks(X_HASURA_ADMIN_SECRET)
 
 print('Calculating counts... (and submit to db)')
 
