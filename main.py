@@ -314,7 +314,7 @@ def count_word_full(sc, word_id, url, headers, prevtime):
     if word_id not in ex_words:
 
         if word_id >= 0:
-            s.enter(1, 1, count_word_full, (sc, word_id - 1, url, headers, time.time(),))
+            s.enter(0.5, 1, count_word_full, (sc, word_id - 1, url, headers, time.time(),))
 
         response = submit_count(url, headers, calc_counts(word_id))
 
@@ -325,5 +325,5 @@ def count_word_full(sc, word_id, url, headers, prevtime):
         count_word_full(sc, word_id - 1, url, headers, time.time())
 
 # enter the first even to sched
-s.enter(1, 1, count_word_full, (s, length, request_url, request_headers, time.time(),))
+s.enter(0.5, 1, count_word_full, (s, length, request_url, request_headers, time.time(),))
 s.run()
