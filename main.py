@@ -309,12 +309,12 @@ s = sched.scheduler(time.time, time.sleep)
 length = len(words_in_db)
 
 # combines calc_counts and submit_count
-def count_word_full(sc, word_id, length, url, headers, prevtime):
+def count_word_full(sc, word_id, url, headers, prevtime):
 
     if word_id not in ex_words:
 
-        if word_id <= length:
-            s.enter(1, 1, count_word_full, (sc, word_id + 1, length,  url, headers, time.time(),))
+        if word_id >= 0:
+            s.enter(1, 1, count_word_full, (sc, word_id - 1, url, headers, time.time(),))
 
         response = submit_count(url, headers, calc_counts(word_id))
 
@@ -322,8 +322,8 @@ def count_word_full(sc, word_id, length, url, headers, prevtime):
 
     else:
         print(word_id, ": excluded")
-        count_word_full(sc, word_id + 1, length, url, headers, time.time())
+        count_word_full(sc, word_id - 1, url, headers, time.time())
 
 # enter the first even to sched
-s.enter(1, 1, count_word_full, (s, 1, length, request_url, request_headers, time.time(),))
+s.enter(1, 1, count_word_full, (s, length, request_url, request_headers, time.time(),))
 s.run()
