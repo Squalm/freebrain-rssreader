@@ -105,6 +105,9 @@ while True:
     feed_entries_by_links = list( dict.fromkeys(feed_entries_by_links) )
     feed_entries_by_words = list( dict.fromkeys(feed_entries_by_words) )
 
+    # Keep this list for later
+    words_affected = feed_entries_by_words
+
     print('Got', len(feed_entries_by_links), 'links,', len(feed_entries_by_words), 'words and', len(feed_entries_by_join), 'joins')
 
     parsed_response_links = getLinks(X_HASURA_ADMIN_SECRET)
@@ -268,6 +271,12 @@ while True:
     # Get links in db (for published dates)
     # links = getLinks(X_HASURA_ADMIN_SECRET)
 
+    print('Rechecking', str(len(words_affected)), 'words')
+
+    print("Substituting...")
+    for i in range(len(words_affected)):
+        words_affected[i] = words_in_db[words_affected[i]]
+
     print('Calculating counts... (and submit to db)')
 
     filter_counts_by_every_word = []
@@ -312,21 +321,21 @@ while True:
     length = len(words_in_db)
 
     # combines calc_counts and submit_count
-    def count_word_full(sc, word_id, url, headers, prevtime):
+    def count_word_full(sc, word_list, id, url, headers, prevtime):
 
-        if word_id not in ex_words:
+        if word_list[id] not in ex_words:
 
-            if word_id >= 0:
-                s.enter(0.5, 1, count_word_full, (sc, word_id - 1, url, headers, time.time(),))
+            if word_list[id] >= 0:
+                s.enter(1, 1, count_word_full, (sc, word_list[id], url, headers, time.time(),))
 
-            response = submit_count(url, headers, calc_counts(word_id))
+            response = submit_count(url, headers, calc_counts(word_list[id]))
 
-            print(str(word_id), ": took", str(time.time() - prevtime), ":", response)
+            print(str(word_list[id]), ": took", str(time.time() - prevtime), ":", response)
 
         else:
-            print(word_id, ": excluded")
-            count_word_full(sc, word_id - 1, url, headers, time.time())
+            print(word_list[id], ": excluded")
+            count_word_full(sc, word_list, id, url, headers, time.time())
 
     # enter the first even to sched
-    s.enter(0.5, 1, count_word_full, (s, length, request_url, request_headers, time.time(),))
+    s.enter(1, 1, count_word_full, (s, words_affected, len(words_affected), request_url, request_headers, time.time(),))
     s.run()
