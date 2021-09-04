@@ -28,8 +28,8 @@ def getLinks(SECRET:str):
     }
     request_query = """query {
         links {
-            id,
-            link,
+            id
+            link
             published
         }
     }
@@ -48,7 +48,7 @@ def getWords(SECRET:str):
     }
     request_query = """query {
         keywords {
-            id,
+            id
             name
         }
     }
@@ -67,8 +67,8 @@ def getJoins(SECRET:str):
     }
     request_query = """query {
         links_join_keywords {
-            id,
-            link_id,
+            id
+            link_id
             keyword_id
         }
     }
