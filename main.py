@@ -337,5 +337,5 @@ while True:
             count_word_full(sc, word_list, id, url, headers, time.time())
 
     # enter the first even to sched
-    s.enter(1, 1, count_word_full, (s, words_affected, len(words_affected), request_url, request_headers, time.time(),))
+    s.enter(1, 1, count_word_full, (s, words_affected, len(words_affected)-1, request_url, request_headers, time.time(),))
     s.run()
