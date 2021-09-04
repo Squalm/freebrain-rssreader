@@ -325,8 +325,8 @@ while True:
 
         if word_list[id] not in ex_words:
 
-            if word_list[id] >= 0:
-                s.enter(1, 1, count_word_full, (sc, word_list[id], url, headers, time.time(),))
+            if id < len(word_list):
+                s.enter(1, 1, count_word_full, (sc, word_list, id+1, url, headers, time.time(),))
 
             response = submit_count(url, headers, calc_counts(word_list[id]))
 
@@ -334,8 +334,8 @@ while True:
 
         else:
             print(word_list[id], ": excluded")
-            count_word_full(sc, word_list, id, url, headers, time.time())
+            count_word_full(sc, word_list, id+1, url, headers, time.time())
 
     # enter the first even to sched
-    s.enter(1, 1, count_word_full, (s, words_affected, len(words_affected)-1, request_url, request_headers, time.time(),))
+    s.enter(1, 1, count_word_full, (s, words_affected, 0, request_url, request_headers, time.time(),))
     s.run()
