@@ -325,7 +325,7 @@ while True:
 
         if word_list[id] not in ex_words:
 
-            if id < len(word_list):
+            if id < len(word_list) -1:
                 s.enter(1, 1, count_word_full, (sc, word_list, id+1, url, headers, time.time(),))
 
             response = submit_count(url, headers, calc_counts(word_list[id]))
