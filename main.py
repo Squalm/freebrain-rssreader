@@ -26,7 +26,7 @@ def getLinks(SECRET:str):
         'content-type': 'application/json',
         'X-HASURA-ADMIN-SECRET': SECRET
     }
-    request_query = """query {
+    request_query = """query get_links {
         links {
             id
             link
@@ -46,7 +46,7 @@ def getWords(SECRET:str):
         'content-type': 'application/json',
         'X-HASURA-ADMIN-SECRET': SECRET
     }
-    request_query = """query {
+    request_query = """query get_keywords {
         keywords {
             id
             name
@@ -65,7 +65,7 @@ def getJoins(SECRET:str):
         'content-type': 'application/json',
         'X-HASURA-ADMIN-SECRET': SECRET
     }
-    request_query = """query {
+    request_query = """query get_joins {
         links_join_keywords {
             id
             link_id
@@ -141,7 +141,7 @@ while True:
         'content-type': 'application/json',
         'X-HASURA-ADMIN-SECRET': X_HASURA_ADMIN_SECRET
     }
-    request_query = """mutation {
+    request_query = """mutation add_links {
         insert_links(
             objects: [
     """ + links_formatted_for_insert + """
@@ -174,7 +174,7 @@ while True:
 
     words_formatted_for_insert = words_formatted_for_insert[0:len(words_formatted_for_insert)-1]
 
-    request_query = """mutation {
+    request_query = """mutation add_keywords {
         insert_keywords(
             objects: [
     """ + words_formatted_for_insert + """
@@ -233,7 +233,7 @@ while True:
 
     joins_formatted_for_insert = joins_formatted_for_insert[0:len(joins_formatted_for_insert)-1]
 
-    request_query = """mutation {
+    request_query = """mutation add_joins {
         insert_links_join_keywords(
             objects: [
     """ + joins_formatted_for_insert + """
@@ -298,7 +298,7 @@ while True:
         cs = sorted(counts, key = lambda x: x[1], reverse=True) # short for counts sorted
         
         # Perpare for mutation
-        request_query = "mutation {update_keywords(where: {id: {_eq: " + str(word_id) + "} }, _set: {"
+        request_query = "mutation update_count {update_keywords(where: {id: {_eq: " + str(word_id) + "} }, _set: {"
 
         request_query += "associated_1: " + str(cs[1][0]) + ", associated_1_count: " + str(cs[1][1])
         for x in range(2, 11):
