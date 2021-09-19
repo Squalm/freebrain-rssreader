@@ -1,8 +1,11 @@
 # Runs on python 3.7 (not 3.9 at time of writing), because of Feedparser's requirements
 
-import feedparser, csv, json, requests, re, time, sched
+import feedparser, csv, json, requests, re, time, datetime, sched
 
 from requests.api import request
+
+# IMPORTANT VARIABLE FOR DEBUGGING (SPEEDS EVERYTHING UP BY SKIPPING STEPS)
+DEBUG_MODE = True
 
 # Grab admin secret
 print('Read secrets.txt...')
@@ -101,6 +104,10 @@ while True:
         
         except:
             print("Bad URL:", url)
+
+        if DEBUG_MODE:
+            break
+
     # Remove duplicates
     feed_entries_by_links = list( dict.fromkeys(feed_entries_by_links) )
     feed_entries_by_words = list( dict.fromkeys(feed_entries_by_words) )
@@ -293,7 +300,13 @@ while True:
         
         flat_joins = sum([[join for join in feed_entries_by_join['data']['links_join_keywords'] if join['link_id'] == link] for link in relevant_links], [])
         
-        counts = [(w+1, [join['keyword_id'] for join in flat_joins].count(w+1)) for w in range(len(words_in_db))]
+        # counts = [(w+1, [join['keyword_id'] for join in flat_joins].count(w+1)) for w in range(len(words_in_db))]
+        counts = []
+        for w in range(1, len(words_in_db) + 1):
+            _count = (w, 0.0)
+            for join in flat_joins:
+                _count[1] += 1 * parse_timestamp(join['published'])
+            counts.append(_count)
 
         cs = sorted(counts, key = lambda x: x[1], reverse=True) # short for counts sorted
         
@@ -308,6 +321,10 @@ while True:
         request_query += "}) { affected_rows } }"
 
         return request_query
+
+    def parse_timestamp(stamp:str):
+        devaluation_rate = 0.9
+        return stamp
 
     # Submit the count to the url
     def submit_count(url, headers, query):
