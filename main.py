@@ -323,6 +323,8 @@ while True:
     # combines calc_counts and submit_count
     def count_word_full(sc, word_list, id, url, headers, prevtime):
 
+        print(id, "of", len(word_list), "#" + str(word_list[id]), ":", end=" ")
+
         if word_list[id] not in ex_words:
 
             if id < len(word_list) -1:
@@ -330,10 +332,10 @@ while True:
 
             response = submit_count(url, headers, calc_counts(word_list[id]))
 
-            print(str(word_list[id]), ": took", str(time.time() - prevtime), ":", response)
+            print("took", str(time.time() - prevtime), ":", response)
 
         else:
-            print(word_list[id], ": excluded")
+            print("excluded")
             count_word_full(sc, word_list, id+1, url, headers, time.time())
 
     # enter the first even to sched
