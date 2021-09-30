@@ -344,6 +344,8 @@ while True:
 
             if id < len(word_list) -1:
                 s.enter(1, 1, count_word_full, (sc, word_list, id+1, url, headers, time.time(),))
+            else:
+                print("All done!")
 
             response = submit_count(url, headers, calc_counts(word_list[id]))
 
@@ -353,6 +355,8 @@ while True:
             print(word_list[id], ": excluded")
             if id < len(word_list) -1:
                 count_word_full(sc, word_list, id+1, url, headers, time.time())
+            else:
+                print("All done!")
 
     # enter the first even to sched
     s.enter(1, 1, count_word_full, (s, words_affected, 0, request_url, request_headers, time.time(),))
