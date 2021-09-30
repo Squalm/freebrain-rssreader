@@ -351,7 +351,8 @@ while True:
 
         else:
             print(word_list[id], ": excluded")
-            count_word_full(sc, word_list, id+1, url, headers, time.time())
+            if id < len(word_list) -1:
+                count_word_full(sc, word_list, id+1, url, headers, time.time())
 
     # enter the first even to sched
     s.enter(1, 1, count_word_full, (s, words_affected, 0, request_url, request_headers, time.time(),))
