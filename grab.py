@@ -35,12 +35,13 @@ while True:
     feed_entries_by_join = []
     feed_entries_by_links = []
     feed_entries_by_words = []
+    _l = [l['link'] for l in parsed_response_links['data']['links']]
     for url in urls:
         try:
             feed = feedparser.parse(url)
             for entry in feed.entries:
                 
-                if entry.link not in [l['link'] for l in parsed_response_links['data']['links']]: # early check to see if we already have the link.
+                if entry.link not in _l: # early check to see if we already have the link.
 
                     feed_entries_by_links.append(entry.link)
 
