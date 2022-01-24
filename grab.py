@@ -199,19 +199,13 @@ while True:
     join_count = len(parsed_response_joins["data"]["links_join_keywords"])
 
     request_query = """mutation add_stats {
-        insert_stats_one(
-            object: {
-                {keywords: """+str(keyword_count)+"""},
-                {links: """+str(link_count)+"""},
-                {joins: """+str(join_count)+"""}
-            }
-        ) {
-            affected_rows
-            keywords
-            links
-            joins
-        }
-    }"""
+  insert_stats_one(object: {joins: """+str(join_count)+""", keywords: """+str(keyword_count)+""", links: """+str(link_count)+"""}) {
+    joins
+    keywords
+    links
+    time
+  }
+}"""
     
     response = requests.post(request_url, json={'query': request_query}, headers=request_headers)
     print('Server says:', response.status_code)
