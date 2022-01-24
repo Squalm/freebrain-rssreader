@@ -25,6 +25,13 @@ while True:
         
     # Get RSS
     print("Getting RSS feeds...")
+
+    parsed_response_links = getLinks(X_HASURA_ADMIN_SECRET)
+
+    parsed_response_words = getWords(X_HASURA_ADMIN_SECRET)
+
+    parsed_response_joins = getJoins(X_HASURA_ADMIN_SECRET)
+
     feed_entries_by_join = []
     feed_entries_by_links = []
     feed_entries_by_words = []
@@ -33,14 +40,16 @@ while True:
             feed = feedparser.parse(url)
             for entry in feed.entries:
                 
-                feed_entries_by_links.append(entry.link)
+                if entry.link not in [l['link'] for l in parsed_response_links['data']['links']]: # early check to see if we already have the link.
 
-                for word in entry.title.split():
-                    word_stripped = re.sub('[\W_]+', '', word.lower())
-                    if word_stripped != "":
-                        feed_entries_by_join.append([entry.link, word_stripped])
-                        if word_stripped not in feed_entries_by_words:
-                            feed_entries_by_words.append(word_stripped)
+                    feed_entries_by_links.append(entry.link)
+
+                    for word in entry.title.split():
+                        word_stripped = re.sub('[\W_]+', '', word.lower())
+                        if word_stripped != "":
+                            feed_entries_by_join.append([entry.link, word_stripped])
+                            if word_stripped not in feed_entries_by_words:
+                                feed_entries_by_words.append(word_stripped)
         
         except:
             print("Bad URL:", url)
@@ -48,16 +57,7 @@ while True:
     feed_entries_by_links = list( dict.fromkeys(feed_entries_by_links) )
     feed_entries_by_words = list( dict.fromkeys(feed_entries_by_words) )
 
-    # Keep this list for later
-    words_affected = feed_entries_by_words
-
     print('Got', len(feed_entries_by_links), 'links,', len(feed_entries_by_words), 'words and', len(feed_entries_by_join), 'joins')
-
-    parsed_response_links = getLinks(X_HASURA_ADMIN_SECRET)
-
-    parsed_response_words = getWords(X_HASURA_ADMIN_SECRET)
-
-    parsed_response_joins = getJoins(X_HASURA_ADMIN_SECRET)
 
     # Compare links against the db for each and if doesn't exist, add it
     print('Removing links that already exist...')
@@ -202,7 +202,7 @@ while True:
             object: {
                 {keywords: """+str(keyword_count)+"""},
                 {links: """+str(link_count)+"""},
-                {joins: """+str(join_count)+"""},
+                {joins: """+str(join_count)+"""}
             }
         ) {
             affected_rows
