@@ -199,13 +199,16 @@ while True:
 
     request_query = """mutation add_stats {
         insert_stats_one(
-            objects: [
-                {keywords: """+str(keyword_count)+"""}
-                {links: """+str(link_count)+"""}
-                {joins: """+str(join_count)+"""}
-            ]
+            object: {
+                {keywords: """+str(keyword_count)+"""},
+                {links: """+str(link_count)+"""},
+                {joins: """+str(join_count)+"""},
+            }
         ) {
             affected_rows
+            keywords
+            links
+            joins
         }
     }"""
     
