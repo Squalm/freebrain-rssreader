@@ -2,6 +2,8 @@
 
 import feedparser, csv, json, requests, re, time, sched
 
+from tqdm import tqdm
+
 from requests.api import request
 
 from main import * # import functions from main
@@ -36,7 +38,7 @@ while True:
     feed_entries_by_links = []
     feed_entries_by_words = []
     _l = [l['link'] for l in parsed_response_links['data']['links']]
-    for url in urls:
+    for url in tqdm(urls):
         try:
             feed = feedparser.parse(url)
             for entry in feed.entries:
@@ -164,7 +166,7 @@ while True:
     #print(joins_already_in_db)
 
     _cleaned_feed_entries_by_join = []
-    for join in feed_entries_by_join:
+    for join in tqdm( feed_entries_by_join ):
         if join not in joins_already_in_db:
             _cleaned_feed_entries_by_join.append(join)
     feed_entries_by_join = _cleaned_feed_entries_by_join
@@ -211,5 +213,5 @@ while True:
     print('Server says:', response.status_code)
     print(response.text)
 
-    print('Sleeping for 3600 (1 hour)\n\n')
-    time.sleep(3600)
+    print('Sleeping for 6 hours.\n\n')
+    time.sleep(3600 * 6)
