@@ -213,5 +213,5 @@ while True:
     print('Server says:', response.status_code)
     print(response.text)
 
-    print('Sleeping for 12 hours.\n')
-    time.sleep(3600 * 12)
+    print('Sleeping for 24 hours.\n')
+    time.sleep(3600 * 24)
