@@ -8,7 +8,7 @@ from requests.api import request
 
 from main import * # import functions from main
 
-GRAPHQL = 'http://localhost:1337/v1/graphql'
+GRAPHQL = 'https://vkfwvlxduoseejskgrxg.hasura.eu-central-1.nhost.run/v1/graphql'
 
 # Grab admin secret
 print('Read secrets.txt...')
@@ -23,6 +23,12 @@ with open('feeds.csv', mode='r') as file:
     #print(csvfile)
 
     urls = [line['feedurl'] for line in csvfile]
+
+# for chunking later
+def divide_chunks(l, n):
+     
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
 
 # Loop on this infinitely so if we finish get new RSS feeds
 while True:
@@ -149,12 +155,12 @@ while True:
     # Substitute ids
     # We must get keywords and links again so that we have the correct ids
     print('Substituting IDs... (first we must get all words and links again)')
-    all_words = getWords(X_HASURA_ADMIN_SECRET)
+    all_words = getWords(X_HASURA_ADMIN_SECRET, GRAPHQL)
     words_in_db = {}
     for word_pair in all_words['data']['keywords']:
         words_in_db[word_pair['name']] = word_pair['id']
 
-    all_links = getLinks(X_HASURA_ADMIN_SECRET)
+    all_links = getLinks(X_HASURA_ADMIN_SECRET, GRAPHQL)
     links_in_db = {}
     for link_pair in all_links['data']['links']:
         links_in_db[link_pair['link']] = link_pair['id']
@@ -175,25 +181,32 @@ while True:
     print('Found', len(feed_entries_by_join), 'new joins')
 
     print('Add joins to the db...')
-    joins_formatted_for_insert = ""
-    for join in feed_entries_by_join:
-        joins_formatted_for_insert += '{link_id: "' + str(join[0]) + '", keyword_id: "' + str(join[1]) + '"}, '
+    joins_formatted_for_insert = []
+    for j in feed_entries_by_join:
+        joins_formatted_for_insert.append('{link_id: "' + str(j[0]) + '", keyword_id: "' + str(j[1]) + '"}, ')
 
     joins_formatted_for_insert = joins_formatted_for_insert[0:len(joins_formatted_for_insert)-1]
 
-    request_query = """mutation add_joins {
-        insert_links_join_keywords(
-            objects: [
-    """ + joins_formatted_for_insert + """
-            ]
-        ) {
-            affected_rows
+    # Split into long lumps when addings these!
+    chunks = list(divide_chunks(joins_formatted_for_insert, 5000))
+
+    for chunk in chunks:
+
+        request_query = """mutation add_joins {
+            insert_links_join_keywords(
+                objects: [
+        """ + "".join(chunk) + """
+                ]
+            ) {
+                affected_rows
+            }
         }
-    }
-    """
-    response = requests.post(request_url, json={'query': request_query}, headers=request_headers)
-    print('Server says:', response.status_code)
-    print(response.text)
+        """
+        response = requests.post(request_url, json={'query': request_query}, headers=request_headers)
+        print('Server says:', response.status_code)
+        print(response.text)
+
+        time.sleep(10)
 
     # Do stats!
     print("Doing Stats")
@@ -215,5 +228,5 @@ while True:
     print('Server says:', response.status_code)
     print(response.text)
 
-    print('Sleeping for 24 hours.\n')
-    time.sleep(3600 * 24)
+    print('Sleeping for 12 hours.\n')
+    time.sleep(3600 * 12)
