@@ -5,9 +5,9 @@ import feedparser, csv, json, requests, re, time, sched
 from requests.api import request
 
 # Grab links from db
-def getLinks(SECRET:str):
+def getLinks(SECRET:str, url = 'http://localhost:1337/v1/graphql'):
     print('Getting links from the db...')
-    request_url = 'https://free-brain.hasura.app/v1/graphql'
+    request_url = url
     request_headers = {
         'content-type': 'application/json',
         'X-HASURA-ADMIN-SECRET': SECRET
@@ -25,9 +25,9 @@ def getLinks(SECRET:str):
     return json.loads(response.text)
 
 # Grab words from db
-def getWords(SECRET:str):
+def getWords(SECRET:str, url = 'http://localhost:1337/v1/graphql'):
     print('Getting keywords from the db...')
-    request_url = 'https://free-brain.hasura.app/v1/graphql'
+    request_url = url
     request_headers = {
         'content-type': 'application/json',
         'X-HASURA-ADMIN-SECRET': SECRET
@@ -44,9 +44,9 @@ def getWords(SECRET:str):
     return json.loads(response.text)
 
 # Grab joins from the db
-def getJoins(SECRET:str):
+def getJoins(SECRET:str, url = 'http://localhost:1337/v1/graphql'):
     print('Getting joins from the db...')
-    request_url = 'https://free-brain.hasura.app/v1/graphql'
+    request_url = url
     request_headers = {
         'content-type': 'application/json',
         'X-HASURA-ADMIN-SECRET': SECRET

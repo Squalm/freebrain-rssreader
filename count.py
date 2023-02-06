@@ -7,6 +7,8 @@ from requests.api import request
 
 from main import * # import functions from main
 
+GRAPHQL = 'http://localhost:1337/v1/graphql'
+
 # Grab admin secret
 print('Read secrets.txt...')
 with open('secrets.txt', mode='r') as file:
@@ -19,17 +21,17 @@ def calc_counts(word_id):
     
     flat_joins = sum([[join for join in filtered_joins if join['link_id'] == link] for link in relevant_links], [])
     
-    counts = [(w+1, [join['keyword_id'] for join in flat_joins].count(w+1)) for w in range(len(words_in_db))]
+    counts = [(w["id"], [join['keyword_id'] for join in flat_joins].count(w["id"])) for w in words_in_db]
 
     cs = sorted(counts, key = lambda x: x[1], reverse=True) # short for counts sorted
     
     # Perpare for mutation
-    request_query = "mutation update_count {update_keywords(where: {id: {_eq: " + str(word_id) + "} }, _set: {"
+    request_query = 'mutation update_count {update_keywords(where: {id: {_eq: "' + str(word_id) + '"} }, _set: {'
 
-    request_query += "associated_1: " + str(cs[1][0]) + ", associated_1_count: " + str(cs[1][1])
+    request_query += 'associated_1: "' + str(cs[1][0]) + '", associated_1_count: ' + str(cs[1][1])
     for x in range(2, 11):
         if cs[x][1] > 0:
-            request_query += ", associated_" + str(x) + ": " + str(cs[x][0]) + ", associated_" + str(x) + "_count: " + str(cs[x][1])
+            request_query += ', associated_' + str(x) + ': "' + str(cs[x][0]) + '", associated_' + str(x) + "_count: " + str(cs[x][1])
 
     request_query += "}) { affected_rows } }"
 
@@ -44,20 +46,20 @@ def submit_count(url, headers, query):
 # combines calc_counts and submit_count
 def count_word_full(sc, word_list, id, url, headers, prevtime):
 
-    print(id, "of", len(word_list), "#" + str(word_list[id]['name']), ":", end=" ")
+    print(id, "of", len(word_list), ":", end=" ")
 
     if id < len(word_list) -1:
         s.enter(1, 1, count_word_full, (sc, word_list, id+1, url, headers, time.time(),))
 
     response = submit_count(url, headers, calc_counts(word_list[id]['id']))
 
-    print("took", str(time.time() - prevtime), ":", response)
+    print("took", str(time.time() - prevtime)[0:4], ":", response, " #" + str(word_list[id]['name']))
 
 while True:
 
     # Get all the stuff
-    words_in_db = getWords(X_HASURA_ADMIN_SECRET)["data"]["keywords"]
-    feed_entries_by_join = getJoins(X_HASURA_ADMIN_SECRET)['data']['links_join_keywords']
+    words_in_db = getWords(X_HASURA_ADMIN_SECRET, GRAPHQL)["data"]["keywords"]
+    feed_entries_by_join = getJoins(X_HASURA_ADMIN_SECRET, GRAPHQL)['data']['links_join_keywords']
 
     # Filter words to exclude words we don't want
     print("Read excludedwords.csv...")
@@ -80,7 +82,7 @@ while True:
     print('Calculating counts... (and submit to db)')
 
     filter_counts_by_every_word = []
-    request_url = 'https://free-brain.hasura.app/v1/graphql'
+    request_url = GRAPHQL
     request_headers = {
         'content-type': 'application/json',
         'X-HASURA-ADMIN-SECRET': X_HASURA_ADMIN_SECRET

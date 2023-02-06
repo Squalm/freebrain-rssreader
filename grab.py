@@ -8,6 +8,8 @@ from requests.api import request
 
 from main import * # import functions from main
 
+GRAPHQL = 'http://localhost:1337/v1/graphql'
+
 # Grab admin secret
 print('Read secrets.txt...')
 with open('secrets.txt', mode='r') as file:
@@ -28,11 +30,11 @@ while True:
     # Get RSS
     print("Getting RSS feeds...")
 
-    parsed_response_links = getLinks(X_HASURA_ADMIN_SECRET)
+    parsed_response_links = getLinks(X_HASURA_ADMIN_SECRET, GRAPHQL)
 
-    parsed_response_words = getWords(X_HASURA_ADMIN_SECRET)
+    parsed_response_words = getWords(X_HASURA_ADMIN_SECRET, GRAPHQL)
 
-    parsed_response_joins = getJoins(X_HASURA_ADMIN_SECRET)
+    parsed_response_joins = getJoins(X_HASURA_ADMIN_SECRET, GRAPHQL)
 
     feed_entries_by_join = []
     feed_entries_by_links = []
@@ -82,7 +84,7 @@ while True:
     links_formatted_for_insert = links_formatted_for_insert[0:len(links_formatted_for_insert)-1]
     #print(links_formatted_for_insert)
 
-    request_url = 'https://free-brain.hasura.app/v1/graphql'
+    request_url = GRAPHQL
     request_headers = {
         'content-type': 'application/json',
         'X-HASURA-ADMIN-SECRET': X_HASURA_ADMIN_SECRET
@@ -175,7 +177,7 @@ while True:
     print('Add joins to the db...')
     joins_formatted_for_insert = ""
     for join in feed_entries_by_join:
-        joins_formatted_for_insert += '\n           {link_id: ' + str(join[0]) + ', keyword_id: ' + str(join[1]) + '},'
+        joins_formatted_for_insert += '{link_id: "' + str(join[0]) + '", keyword_id: "' + str(join[1]) + '"}, '
 
     joins_formatted_for_insert = joins_formatted_for_insert[0:len(joins_formatted_for_insert)-1]
 
