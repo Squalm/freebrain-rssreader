@@ -7,7 +7,7 @@ from requests.api import request
 
 from main import * # import functions from main
 
-GRAPHQL = 'http://localhost:1337/v1/graphql'
+GRAPHQL = 'https://vkfwvlxduoseejskgrxg.hasura.eu-central-1.nhost.run/v1/graphql'
 
 # Grab admin secret
 print('Read secrets.txt...')
