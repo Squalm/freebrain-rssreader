@@ -1,6 +1,6 @@
 # Runs on python 3.8 (not 3.9 at time of writing), because of Feedparser's requirements
 
-import feedparser, csv, json, requests, re, time, sched
+import feedparser, csv, requests, re, time
 
 from tqdm import tqdm
 

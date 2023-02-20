@@ -1,7 +1,7 @@
 # Runs on python 3.8 (not 3.9 at time of writing), because of Feedparser's requirements
 
 from telnetlib import XASCII
-import feedparser, csv, json, requests, re, time, sched
+import csv, requests, time, sched
 
 from requests.api import request
 
