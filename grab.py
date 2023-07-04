@@ -17,9 +17,14 @@ print("Read feeds.csv...")
 with open('feeds.csv', mode='r') as file:
 
     csvfile = csv.DictReader(file)
-    #print(csvfile)
-
     urls = [line['feedurl'] for line in csvfile]
+
+# Get excluded words
+print("Read excludedwords.csv...")
+with open('excludedwords.csv', mode='r') as file:
+
+    csvfile = csv.DictReader(file)
+    forbidden = [line['word'] for line in csvfile]
 
 # Get RSS
 print("Getting RSS feeds...")
@@ -27,7 +32,7 @@ print("Getting RSS feeds...")
 joins = []
 links = []
 words = []
-for url in tqdm(urls[0:50]):
+for url in tqdm(urls):
     try:
         feed = feedparser.parse(url)
         for entry in feed.entries:
@@ -45,7 +50,8 @@ for url in tqdm(urls[0:50]):
                     stripped = [
                         re.sub('[\W_]+', '', word.lower()) 
                         for word in entry.title.split() 
-                        if re.sub('[\W_]+', '', word.lower()) != ""
+                        if re.sub('[\W_]+', '', word.lower()) != "" and
+                        re.sub('[\W_]+', '', word.lower()) not in forbidden
                     ]
 
                     words += stripped
