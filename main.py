@@ -71,7 +71,7 @@ class Graph:
         
             # Format
             q = "".join([
-                f'MATCH (n{i}:Word {{name:"{chunk[i][0]}"}}), (m{i}:Word {{name:"{chunk[i][1]}"}}) '
+                f'MATCH (n{i}:Word {{name:"{chunk[i][0]}"}}) MATCH (m{i}:Word {{name:"{chunk[i][1]}"}}) '
                 for i in range(0, len(chunk))
             ])
             q += "".join([
