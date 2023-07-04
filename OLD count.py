@@ -89,7 +89,6 @@ while True:
     }
 
 
-    break
 
     # sched setup
     s = sched.scheduler(time.time, time.sleep)
