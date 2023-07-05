@@ -13,7 +13,6 @@ We can't guarantee we'll catch everything from these sites, but we get as much a
 - Fox
 - Washington Post
 - Daily Mail
-- Daily Telegraph
 - The Independent
 - Huffington Post
 - PCGamer
