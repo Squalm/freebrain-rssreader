@@ -3,7 +3,6 @@
 import feedparser, csv, re, itertools
 
 from tqdm import tqdm
-from requests.api import request
 from main import * # import functions from main
 
 URI = "neo4j+s://11a08269.databases.neo4j.io"

@@ -1,5 +1,5 @@
 # Runs on python 3.8 (not 3.9 at time of writing), because of Feedparser's requirements
-import json, requests, os
+import os
 
 import logging
 from neo4j import GraphDatabase
