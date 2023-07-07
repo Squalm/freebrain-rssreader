@@ -5,7 +5,7 @@ import feedparser, csv, re, itertools
 from tqdm import tqdm
 from main import * # import functions from main
 
-URI = "neo4j+s://11a08269.databases.neo4j.io"
+URI = "neo4j://localhost:7687"
 # Grab admin secret
 secret = getSecret()
 # Connect to db
@@ -61,6 +61,12 @@ for url in tqdm(urls):
     
     except:
         print("Bad URL:", url)
+
+print(f"Got {len(links)} articles")
+
+# First decay relationships
+print("Decay counts...")
+db.decay(0.99, True)
 
 # Add words to db
 print(f"Add {len(words)} words...")

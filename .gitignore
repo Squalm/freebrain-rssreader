@@ -114,4 +114,5 @@ dmypy.json
 .pyre/
 
 # Private variables
-secrets.txt
+.env
+.env.local

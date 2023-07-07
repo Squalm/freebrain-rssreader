@@ -15,7 +15,7 @@ def getSecret():
     return(os.environ["PASSWORD"])
 
 # check connection
-URI = "neo4j+s://11a08269.databases.neo4j.io"
+URI = "neo4j://localhost:7687"
 secret = getSecret()
 
 with GraphDatabase.driver(URI, auth=("neo4j", secret)) as driver:
@@ -37,9 +37,9 @@ class Graph:
     def query(self, query: str, verbose = False):
         records, summary, keys = self.driver.execute_query(query)
         if verbose:
-            stump = summary.query if len(summary.query) <= 40 else summary.query[0:39] + "..."
-            print("The query `{query}` returned {records_count} records in {time} ms.".format(
-                query=stump, records_count=len(records),
+            stump = summary.query if len(summary.query) <= 50 else summary.query[0:49] + "..."
+            print("The query `{query}`, in {time} ms, did:\n{counters}".format(
+                query=stump, counters=str(summary.counters),
                 time=summary.result_available_after,
             ))
 
@@ -57,17 +57,20 @@ class Graph:
 
             # Format
             q = "".join([
-                f'MERGE (n{i}:Word {{name:"{chunk[i]}"}}) ON MATCH SET n{i}.count = n{i}.count + 1 ON CREATE SET n{i}.count = 1 '
+                f'MERGE (n{i}:Word {{name:"{chunk[i]}"}}) ON MATCH SET n{i}.count = n{i}.count + 1, n{i}.decayed = n{i}.decayed + 1.0 ON CREATE SET n{i}.count = 1, n{i}.decayed = 1.0 '
                 for i in range(0, len(chunk))
             ])
 
-            self.query(q, verbose)
+            try:
+                self.query(q, verbose)
+            except:
+                pass
 
         return None
     
     def seenLinks(self, pairs: list[tuple[str, str]], verbose = False) -> None:
 
-        for chunk in divide_chunks(pairs, 100):
+        for chunk in divide_chunks(pairs, 500):
         
             # Format
             q = "".join([
@@ -75,14 +78,23 @@ class Graph:
                 for i in range(0, len(chunk))
             ])
             q += "".join([
-                f'MERGE (n{i}) -[l{i}:WITH]- (m{i}) ON MATCH SET l{i}.count = l{i}.count + 1 ON CREATE SET l{i}.count = 1 '
+                f'MERGE (n{i}) -[l{i}:WITH]- (m{i}) ON MATCH SET l{i}.count = l{i}.count + 1, l{i}.decayed = l{i}.decayed + 1.0 ON CREATE SET l{i}.count = 1, l{i}.decayed = 1.0 '
                 for i in range(0, len(chunk))
             ])
 
-            self.query(q, verbose)
+            try:
+                self.query(q, verbose)
+            except:
+                pass
 
         return None
+    
+    def decay(self, c: int, verbose = False) -> None:
+        self.query(f"MATCH (n:Word) SET n.decayed = n.decayed * {c}", verbose)
+        self.query(f"MATCH (:Word)-[l:WITH]-() SET l.decayed = l.decayed * {c}", verbose)
+        return None
 
-    def close(self):
+    def close(self) -> None:
         self.driver.close()
+        return None
 
