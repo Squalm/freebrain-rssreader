@@ -1,11 +1,8 @@
 # Runs on python 3.8 (not 3.9 at time of writing), because of Feedparser's requirements
 import os
 
-import logging
 from neo4j import GraphDatabase
 from neo4j.exceptions import Neo4jError
-
-from requests.api import request
 
 # load .env
 from dotenv import load_dotenv
