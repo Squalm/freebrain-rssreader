@@ -53,7 +53,7 @@ class Graph:
     
     def seenWords(self, words: list[str], verbose = False) -> None:
 
-        for chunk in divide_chunks(words, 500):
+        for chunk in divide_chunks(words, 5):
 
             # Format
             q = "".join([
@@ -70,7 +70,7 @@ class Graph:
     
     def seenLinks(self, pairs: list[tuple[str, str]], verbose = False) -> None:
 
-        for chunk in divide_chunks(pairs, 500):
+        for chunk in divide_chunks(pairs, 5):
         
             # Format
             q = "".join([
