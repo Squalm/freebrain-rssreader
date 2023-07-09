@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+    <script src="https://unpkg.com/neovis.js@2.1.0/dist/neovis.js"></script>
+    <title>Neovis.js Simple Example</title>
+    <style type="text/css">
+        html, body {
+            font: 16pt arial;
+            background-color: white;
+        }
+
+        #viz {
+            width: 900px;
+            height: 900px;
+            border: 1px solid lightgray;
+            font: 22pt arial;
+            color: white;
+        }
+    </style>
+    <script type="text/javascript">
+
+        let neoViz;
+
+        function draw() {
+            const config = {
+                containerId: "viz",
+                neo4j: {
+                    serverUrl: "neo4j://localhost:7687",
+                    serverUser: "neo4j",
+                    serverPassword: "@zv2%sr!t7c#tnh2",
+                },
+                visConfig: {
+                    nodes: {
+                        shape: "dot",
+                        color: "lightblue",
+                    }
+                },
+                labels: {
+                    Word: {
+                        label: "name",
+                        value: "count",
+                        group: undefined,
+                    }
+                },
+                relationships: {
+                    WITH: {
+                        value: "count"
+                    }
+                },
+                initialCypher: "MATCH (n) -[l]-> (m) WHERE n.count > 7 AND m.count > 7 AND n <> m AND l.count >= 2 RETURN *"
+            };
+    
+            neoViz = new NeoVis.default(config);
+            neoViz.render();
+        }
+    </script>
+</head>
+<body onload="draw()">
+<div id="viz"></div>
+</body>
+</html>
