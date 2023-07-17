@@ -2,15 +2,17 @@
 import os
 from datetime import date
 
+import logging
 from neo4j import GraphDatabase
 from neo4j.exceptions import Neo4jError
 
 # load .env
-from dotenv import load_dotenv
-load_dotenv()
+# from dotenv import load_dotenv
+# load_dotenv()
 
 def getSecret():
-    return(os.environ["PASSWORD"])
+    return("@zv2%sr!t7c#tnh2")
+
 
 # check connection
 URI = "neo4j://localhost:7687"
@@ -53,7 +55,7 @@ class Graph:
     
     def seenWords(self, words: list[str], verbose = False) -> None:
 
-        for chunk in divide_chunks(words, 5):
+        for chunk in divide_chunks(words, 10):
 
             # Format
             q = "".join([
@@ -70,7 +72,7 @@ class Graph:
     
     def seenLinks(self, pairs: list[tuple[str, str]], verbose = False) -> None:
 
-        for chunk in divide_chunks(pairs, 5):
+        for chunk in divide_chunks(pairs, 10):
         
             # Format
             q = "".join([
