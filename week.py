@@ -7,4 +7,4 @@ secret = getSecret()
 db = Graph(URI, ("neo4j", secret))
 
 db.query(f"MATCH (n) SET n.{db.datestr} = 0")
-db.query(f"MATCH ()-[l]-() SET n.{db.datestr} = 0")
+db.query(f"MATCH ()-[l]-() SET l.{db.datestr} = 0")
