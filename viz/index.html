@@ -32,7 +32,7 @@
                 visConfig: {
                     nodes: {
                         shape: "dot",
-                        color: "lightblue",
+                        color: "5BC0BE",
                     }
                 },
                 labels: {
@@ -47,7 +47,7 @@
                         value: "count"
                     }
                 },
-                initialCypher: "MATCH (n) -[l]-> (m) WHERE n.count > 7 AND m.count > 7 AND n <> m AND l.count >= 2 RETURN *"
+                initialCypher: "MATCH (n) -[l]-> (m) WHERE n.count > 15 AND m.count > 15 AND n <> m AND l.count >= 5 RETURN *"
             };
     
             neoViz = new NeoVis.default(config);
