@@ -1,7 +1,9 @@
-# Freebrain - RSS Feed reader
-For the freebrain/interbrain (name is WIP) project. Reads a list of RSS feeds from [`feeds.csv`](https://github.com/Squalm/freebrain-rssreader/blob/main/feeds.csv) and pulls out the title and link. It checks the links for duplicates (against itself, and the db) and pushes them to the freebrain db using GraphQL (hosted by [nhost](https://github.com/nhost/nhost)). It then breaks down the titles into words (makes them lowercase, removes special characters, checks for duplicates etc.) and pushes them to the feedbrain db. It then takes the joins between the words and links (i.e. this word was in the title of this link) and substitutes the db ids (after pulling all the words and links again, so that the ids are correct) then pushes that up to the freebrain db.  
+![server01 grabpy rssreading](https://cronitor.io/badges/1WB0lq/production/rKiHq3sbHR25W7MhOWOEZyWud0Y.svg)
 
-N.B. `feedparser` (the python module) is a dependency for this project and does not (as of 26/08/21) support `python 3.9`; I wrote it in `3.7.7`.
+# Freebrain - RSS Feed reader
+For [Interbrain](https://interbrain.xhirp.com/). Reads a list of RSS feeds from [`feeds.csv`](https://github.com/Squalm/freebrain-rssreader/blob/main/feeds.csv) and pulls out the title and link. It breaks down the titles into words and aims to only get the most today's articles and merges them into the freebrain db using Cypher (locally hosted [neo4j](https://neo4j.com/) db). It also adds the connections between words (if they occured in the same article title) and adds those relationships to the db too.  
+
+I run this in python `3.9.5`.
 
 ## RSS Feeds
 We can't guarantee we'll catch everything from these sites, but we get as much as we can. If you wanna see the full list of RSS feeds we check, you can look at [this file](https://github.com/Squalm/freebrain-rssreader/blob/main/feeds.csv).
